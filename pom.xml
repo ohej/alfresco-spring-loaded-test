@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>dk.ohej</groupId>
+    <artifactId>alf-amp-5-0-a</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>alf-amp-5-0-a Repository AMP project</name>
+    <packaging>amp</packaging>
+    <description>Manages the lifecycle of the alf-amp-5-0-a Repository AMP (Alfresco Module Package)</description>
+
+    <parent>
+        <groupId>org.alfresco.maven</groupId>
+        <artifactId>alfresco-sdk-parent</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
+    </parent>
+
+    <!-- 
+       | SDK properties have sensible defaults in the SDK parent,
+       | but you can override the properties below to use another version. 
+       | For more available properties see the alfresco-sdk-parent POM. 
+       -->
+    <properties>
+        <!--
+            | Defines the groupId for the Alfresco Artifacts to work against. As of 4.2 the only allowed value is: org.alfresco
+            | NOTE: See http://docs.alfresco.com/4.2/concepts/dev-extensions-maven-sdk-tutorials-alfresco-enterprise.html for details
+        -->
+        <alfresco.groupId>org.alfresco</alfresco.groupId>
+        <!-- Defines the Alfresco version to work against.
+             Community versions are typically identified by major.minor.character (4.2.a) while Enterprise versions are identified by major.minor.digit (4.2.0)  -->
+        <alfresco.version>5.0.a-SNAPSHOT</alfresco.version>
+        <app.log.root.level>WARN</app.log.root.level>
+        <alfresco.data.location>alf_data_dev</alfresco.data.location>
+        <!-- Defines the target WAR artifactId to run this amp, only used with the -Pamp-to-war switch
+        .    | Allowed values: alfresco | share. Defaults to a repository AMP, but could point to your foundation WAR -->
+        <alfresco.client.war>alfresco</alfresco.client.war>
+        <!-- Defines the target WAR groupId to run this amp, only used with the -Pamp-to-war switch
+        .    | Could be org.alfresco or your corporate groupId -->
+        <alfresco.client.war.groupId>org.alfresco</alfresco.client.war.groupId>
+        <!-- Defines the target WAR version to run this amp, only used with the -Pamp-to-war switch -->
+        <alfresco.client.war.version>5.0.a-SNAPSHOT</alfresco.client.war.version>
+        <!-- This controls which properties will be picked in src/test/properties for embedded run -->
+        <env>local</env>
+    </properties>
+
+    <!-- Here we realize the connection with the Alfresco selected platform 
+        (e.g.version and edition) -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- This will import the dependencyManagement for all artifacts in the selected Alfresco version/edition
+                (see http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Importing_Dependencies) 
+                NOTE: You still need to define dependencies in your POM, but you can omit version as it's enforced by this dependencyManagement. NOTE: It defaults 
+                to the latest version this SDK pom has been tested with, but alfresco version can/should be overridden in your project's pom -->
+            <dependency>
+                <groupId>${alfresco.groupId}</groupId>
+                <artifactId>alfresco-platform-distribution</artifactId>
+                <version>${alfresco.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <!-- Following dependencies are needed for compiling Java code in src/main/java; 
+         <scope>provided</scope> is inherited for each of the following; 
+         for more info, please refer to alfresco-platform-distribution POM -->
+    <dependencies>
+        <dependency>
+            <groupId>${alfresco.groupId}</groupId>
+            <artifactId>alfresco-repository</artifactId>
+        </dependency>
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>springloaded</artifactId>
+            <version>1.2.0.RELEASE</version>
+        </dependency>
+    </dependencies>
+
+    <!-- This repository is only needed to retrieve Alfresco parent POM. 
+        NOTE: This can be removed when/if Alfresco will be on Maven Central 
+        
+        NOTE: The repository to be used for Alfresco Enterprise artifacts is
+        https://artifacts.alfresco.com/nexus/content/groups/private/. Please check
+        with Alfresco Support to get credentials to add to your ~/.m2/settings.xml
+        if you are a Enterprise customer or Partner  
+        -->
+    <repositories>
+        <repository>
+            <id>alfresco-public</id>
+            <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+        </repository>
+        <repository>
+            <id>alfresco-public-snapshots</id>
+            <url>https://artifacts.alfresco.com/nexus/content/groups/public-snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <profiles>
+        <!-- Enable AMP project packing on a WAR and run embedded in Tomcat -->
+        <profile>
+            <id>amp-to-war</id>
+            <properties>
+                <skipTests>true</skipTests>
+            </properties>
+            <build>
+
+                <plugins>
+
+
+                    <!-- Fetch and unpack Alfresco Repository / Share in the target / folder -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack-alfresco</id>
+                                <phase>prepare-package</phase>
+                                <goals><goal>unpack</goal></goals>
+                                <configuration>
+                                    <outputDirectory>${alfresco.client.war.folder}</outputDirectory>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>${alfresco.client.war.groupId}</groupId>
+                                            <artifactId>${alfresco.client.war}</artifactId>
+                                            <type>war</type>
+                                            <version>${alfresco.client.war.version}</version>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Configure tomcat context.xml included in the webapp with proper filtering -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <!-- When the AMP runs locally, src/test/webapp and src/test/resources will contain -->
+                            <!-- the location of the configuration files -->
+                            <execution>
+                                <id>copy-alfresco-test-resources</id>
+                                <phase>prepare-package</phase>
+                                <goals><goal>copy-resources</goal></goals>
+                                <configuration>
+                                    <outputDirectory>${alfresco.client.war.folder}</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/test/webapp</directory>
+                                        </resource>
+                                        <resource>
+                                            <directory>${project.build.testOutputDirectory}</directory>
+                                            <targetPath>WEB-INF/classes</targetPath>
+                                            <filtering>${app.filtering.enabled}</filtering>
+                                        </resource>
+                                        <resource>
+                                            <directory>src/test/properties/${env}</directory>
+                                            <filtering>${app.filtering.enabled}</filtering>
+                                            <targetPath>WEB-INF/classes</targetPath>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-tomcat-resources</id>
+                                <phase>prepare-package</phase>
+                                <goals><goal>copy-resources</goal></goals>
+                                <configuration>
+                                    <outputDirectory>${alfresco.client.war.folder}</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>tomcat</directory>
+                                            <filtering>${app.filtering.enabled}</filtering>
+                                            <targetPath>WEB-INF</targetPath>
+                                            <includes>
+                                                <include>context.xml</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- The current AMP artifact is installed into the Alfresco
+                    folder using alfresco-maven-plugin -->
+                    <plugin>
+                        <groupId>org.alfresco.maven.plugin</groupId>
+                        <artifactId>alfresco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>amps-to-war-overlay</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>install</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Configures tomcat to run against the overlaid WAR + AMP -->
+                    <plugin>
+                        <groupId>org.apache.tomcat.maven</groupId>
+                        <artifactId>tomcat7-maven-plugin</artifactId>
+                        <configuration>
+
+
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>run-wars</id>
+                                <goals>
+                                    <!-- As far as I remember, changing this to run-war from run-war-only made a difference, but does not seem to do anything now -->
+                                    <goal>run-war</goal>
+                                </goals>
+                                <phase>integration-test</phase>
+                                <configuration>
+                                    <contextFile>${alfresco.client.war.folder}/WEB-INF/context.xml</contextFile>
+                                    <!-- Perhaps force it to load it now? no? -->
+                                    <systemProperties>
+                                        <JAVA_OPTS>-javaagent:/Users/ole/work/springloaded-1.2.0.RELEASE.jar -noverify</JAVA_OPTS>
+                                    </systemProperties>
+                                    <!-- Fork doesn't work -->
+                                    <fork>false</fork>
+                                    <!-- To run a non WAR project -->
+                                    <ignorePackaging>true</ignorePackaging>
+
+                                    <!-- I'm pretty sure we wanna go with the classloader from maven? -->
+                                    <useSeparateTomcatClassLoader>false</useSeparateTomcatClassLoader>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
+
+    </profiles>
+
+
+
+</project>
