@@ -19,7 +19,7 @@ public class JsonWebscript extends AbstractWebScript
         return "....";
     }
     public String Ole1() {
-        return "fisk fisk";
+        return "fisk fisko";
     }
 
 

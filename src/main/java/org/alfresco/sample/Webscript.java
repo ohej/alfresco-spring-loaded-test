@@ -17,7 +17,7 @@ public class Webscript extends DeclarativeWebScript
     {
         Map<String, Object> model = new HashMap<String, Object>();
 
-        model.put("greeting", "Hello world");
+        model.put("greeting", ":)))))");
 
         return model;
 
