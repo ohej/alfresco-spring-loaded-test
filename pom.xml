@@ -142,7 +142,7 @@
 		                      <artifactId>${alfresco.client.war}</artifactId>
 		                      <type>war</type>
 		                      <version>${alfresco.client.war.version}</version>
-		                      <excludes>WEB-INF/classes/**,WEB-INF/lib/**</excludes>
+		                      <excludes></excludes>
 		                    </artifactItem>
 		                  </artifactItems>
 		                </configuration>
@@ -172,20 +172,6 @@
                                     </resources>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>copy-amp-resources</id>
-                                <phase>process-resources</phase>
-                                <goals><goal>copy-resources</goal></goals>
-                                <configuration>
-                                    <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
-                                    <resources>
-                                        <resource>
-            								<directory>target/${project.build.finalName}/config</directory>
-											<filtering>false</filtering>
-										</resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
                         </executions>
                     </plugin>
                     <!-- Configures tomcat to run against the overlaid WAR + AMP -->
@@ -201,41 +187,20 @@
                                 </goals>
                                 <phase>test</phase>
                                 <configuration>
-							          <path>${alfresco.client.contextPath}</path>
-							          <warSourceDirectory>${alfresco.client.war.folder}</warSourceDirectory>
- 									  <useTestClasspath>true</useTestClasspath>
+							          <useTestClasspath>false</useTestClasspath>
 									  <ignorePackaging>true</ignorePackaging>
-									  <useSeparateTomcatClassLoader>false</useSeparateTomcatClassLoader>
+									  <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
 							          <systemProperties>
 							            <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
 							          </systemProperties>
-							          <addWarDependenciesInClassloader>true</addWarDependenciesInClassloader>
 							          <delegate>true</delegate>
+							      	  <contextFile>${project.basedir}/tomcat/context.xml</contextFile>
 							    </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
-            <dependencies>
-		        <!-- Needed to fix http://code.google.com/p/maven-alfresco-archetypes/issues/detail?id=150 -->
-		        <dependency>
-		            <groupId>org.slf4j</groupId>
-		            <artifactId>jcl-over-slf4j</artifactId>
-		            <version>1.5.11</version>
-		        </dependency>
-		        <dependency>
-		            <groupId>org.slf4j</groupId>
-		            <artifactId>slf4j-log4j12</artifactId>
-		            <version>1.5.11</version>
-		        </dependency>
-		        <dependency>
-		        	<groupId>${alfresco.client.war.groupId}</groupId>
-					<artifactId>${alfresco.client.war}</artifactId>
-					<version>${alfresco.client.war.version}</version>
-					<type>war</type>
-		        </dependency>
-            </dependencies>
         </profile>
 	  <!-- Enable AMP lifecycle if finds a module.properties, including unit testing support -->
     <profile>

@@ -26,6 +26,8 @@
     <bean id="webscript.org.alfresco.sample.java-backed.webscript.get"
           class="org.alfresco.sample.Webscript"
           parent="webscript">
+          <property name="nodeService" ref="nodeService"/>
+          <property name="searchService" ref="searchService"/>
     </bean>
 
 </beans>

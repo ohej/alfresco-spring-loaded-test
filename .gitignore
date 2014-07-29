@@ -3,3 +3,6 @@ target
 alf_data_dev
 *.iml
 .idea
+/.settings/
+/.classpath
+/.project
